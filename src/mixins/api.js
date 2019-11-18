@@ -2,6 +2,9 @@ const APIURL = "http://localhost:3002/api";
 const axios = require("axios");
 export const requestsMixin = {
     methods: {
+        getImage(id) {
+            return axios.get(`${APIURL}/images/${id}`);
+        },
         getImages() {
             return axios.get(`${APIURL}/images`);
         },
