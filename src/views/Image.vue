@@ -42,8 +42,6 @@
 <script>
     import PictureInput from 'vue-picture-input'
     import { requestsMixin } from "../mixins/api.js";
-    import * as faceapi from "face-api.js";
-    const WEIGHTS_URL = process.env.VUE_APP_WEIGHTS_URL || "http://localhost:3002/static/models";
 
     export default {
         name: 'imageCard',
@@ -61,13 +59,6 @@
             PictureInput
         },
         async beforeMount() {
-            await faceapi.loadTinyFaceDetectorModel(WEIGHTS_URL);
-            await faceapi.loadFaceLandmarkTinyModel(WEIGHTS_URL);
-            await faceapi.loadFaceLandmarkModel(WEIGHTS_URL);
-            await faceapi.loadFaceRecognitionModel(WEIGHTS_URL);
-            await faceapi.loadFaceExpressionModel(WEIGHTS_URL);
-            await faceapi.loadAgeGenderModel(WEIGHTS_URL);
-            await faceapi.loadFaceDetectionModel(WEIGHTS_URL);
             const {data} = await this.getImage(this.$route.params.id);
             this.image = data.data.image;
             if (data.data.params.age) {
@@ -78,46 +69,6 @@
             this.loading = false;
         },
         methods: {
-            async detectFace() {
-                if (!this.image) {
-                    console.log('Image not found');
-                    return;
-                }
-                const input = this.$refs['photo'];
-                const options = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 128,
-                    scoreThreshold: 0.3
-                });
-                const detections = await faceapi
-                    .detectAllFaces(input, options)
-                    .withFaceLandmarks()
-                    .withFaceExpressions()
-                    .withAgeAndGender()
-                    .withFaceDescriptors();
-                this.detections = detections[0];
-                this.withFace = !!detections.length;
-                if (this.withFace) {
-                    const data = {
-                        id: this.currentImageId,
-                        params: this.detections,
-                    };
-                    this.editImage(data);
-                }
-            },
-            async onChange (image) {
-                if (image) {
-                    this.image = image;
-                    const data = {
-                        image,
-                        ownerId: 1,
-                        params: {},
-                    };
-                    const result = await this.addImage(data);
-                    this.currentImageId = result.data.data.imageId;
-                } else {
-                    console.log('FileReader API not supported: use the <form>, Luke!');
-                }
-            },
             translateGender(gender) {
                 const genders = {
                     'male': 'мужской',
