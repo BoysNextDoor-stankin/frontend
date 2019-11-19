@@ -61,7 +61,7 @@
     import PictureInput from 'vue-picture-input'
     import { requestsMixin } from "../mixins/api.js";
     import * as faceapi from "face-api.js";
-    const WEIGHTS_URL = "http://localhost:3002/static/models";
+    const WEIGHTS_URL = process.env.WEIGHTS_URL || "http://localhost:3002/static/models";
 
     export default {
         name: 'app',
