@@ -1,23 +1,5 @@
 <template>
     <b-form>
-        <div v-if="!detected">
-        <picture-input
-                    ref="pictureInput"
-                    @change="onChange"
-                    width="600"
-                    height="600"
-                    margin="16"
-                    accept="image/jpeg,image/png"
-                    size="10"
-                    buttonClass="btn"
-                    :customStrings="{
-            upload: '<h1>Bummer!</h1>',
-            drag: 'Поместите сюда фотокарточку с лицом'
-          }">
-            </picture-input>
-            <img ref="photo" v-if="this.image" style="display: none" :src="this.image" alt="">
-            <b-button style="margin-top: 20px" block variant="primary" @click="detectFace">Определить лицо 😺</b-button>
-        </div>
         <div class="card">
             <b-card
                     title=""
@@ -27,31 +9,31 @@
                     tag="article"
                     style=""
                     class="mb-2"
-                    v-if="detected"
             >
-                <b-card-text v-if="withFace">
-                    <div v-if="detections">
+                <b-card-text v-if="detections">
+                    <div>
                         <b-list-group horizontal="" class="detection">
                             <b-list-group-item>Возраст: {{detections.age.toFixed(0)}}</b-list-group-item>
                             <b-list-group-item>Пол: {{translateGender(detections.gender)}}</b-list-group-item>
                             <b-list-group-item>Вероятность верного определения пола: {{(detections.genderProbability*100).toFixed(2)}}%</b-list-group-item>
                         </b-list-group>
                         <b-list-group>
-                                <b-list-group-item>
-                                    Выражения лица:
-                                    <b-list-group-item
-                                            v-for="key of Object.keys(detections.expressions)"
-                                            :key="key"
-                                    >{{translateExpressions(key)}}: {{(detections.expressions[key]*100).toFixed(2)}}%</b-list-group-item>
-                                </b-list-group-item>
-                            </b-list-group>
+                            <b-list-group-item>
+                                Выражения лица:
+                                <b-list-group-item
+                                        v-for="key of Object.keys(detections.expressions)"
+                                        :key="key"
+                                >{{translateExpressions(key)}}: {{(detections.expressions[key]*100).toFixed(2)}}%</b-list-group-item>
+                            </b-list-group-item>
+                        </b-list-group>
                     </div>
                 </b-card-text>
-                <b-card-text v-if="!withFace">
+                <b-card-text v-if="loading">
+                    <img src="../assets/preloader.gif" alt="">
+                </b-card-text>
+                <b-card-text v-if="withoutFace">
                     <p><b>НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ЛИЦО 😓</b></p>
                 </b-card-text>
-
-                <b-button @click="newImageInit" variant="warning">Загрузить новое изображение</b-button>
             </b-card>
         </div>
     </b-form>
@@ -64,15 +46,15 @@
     const WEIGHTS_URL = "http://localhost:3002/static/models";
 
     export default {
-        name: 'app',
+        name: 'imageCard',
         mixins: [requestsMixin],
         data () {
             return {
+                loading: true,
                 currentImageId: null,
-                detected: false,
                 image: '',
                 detections: null,
-                withFace: false,
+                withoutFace: false,
             }
         },
         components: {
@@ -86,15 +68,16 @@
             await faceapi.loadFaceExpressionModel(WEIGHTS_URL);
             await faceapi.loadAgeGenderModel(WEIGHTS_URL);
             await faceapi.loadFaceDetectionModel(WEIGHTS_URL);
+            const {data} = await this.getImage(this.$route.params.id);
+            this.image = data.data.image;
+            if (data.data.params.age) {
+                this.detections = data.data.params;
+            } else {
+                this.withoutFace = true;
+            }
+            this.loading = false;
         },
         methods: {
-            newImageInit() {
-                this.detected = false;
-                this.detections = {};
-                this.image = '';
-                this.currentImageId = null;
-                this.withFace = false;
-            },
             async detectFace() {
                 if (!this.image) {
                     console.log('Image not found');
@@ -112,7 +95,6 @@
                     .withAgeAndGender()
                     .withFaceDescriptors();
                 this.detections = detections[0];
-                this.detected = true;
                 this.withFace = !!detections.length;
                 if (this.withFace) {
                     const data = {

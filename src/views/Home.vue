@@ -1,123 +1,48 @@
 <template>
-    <div class="page">
-        <b-button-toolbar class="button-toolbar float-left">
-            <input type="file" style="display: none" ref="file" @change="onChangeFileUpload($event)" />
-            <b-button variant="primary" @click="$refs.file.click()">Upload Images</b-button>
-        </b-button-toolbar>
-        <div class="clearfix">
-            <img ref="image" :src="form.image" class="photo float-left" />
+    <b-card-group deck>
+        <div v-for="img in images">
+            <a style="margin: 20px" @click="goToImage(img.imageId)">
+                <img class="item" :src="img.image" alt="zzzz">
+            </a>
         </div>
-        <div>
-            <b-card v-for="(img, index) in images" :key="img.imageId">
-                <div class="row">
-                    <div class="col-md-6">
-                        <img :src="img.image" img-alt="Image" class="photo" :ref="`photo-${index}`" />
-                    </div>
-                    <div class="col-md-6">
-                        <h3>Faces</h3>
-                        <b-list-group>
-                            <b-list-group-item v-for="(d, i) of img.detections" :key="i">
-                                <h4>Face {{i + 1}}</h4>
-                                <ul class="detection">
-                                    <li>Age: {{d.age.toFixed(0)}}</li>
-                                    <li>Gender: {{d.gender}}</li>
-                                    <li>Gender Probability: {{(d.genderProbability*100).toFixed(2)}}%</li>
-                                    <li>
-                                        Expressions:
-                                        <ul>
-                                            <li
-                                                    v-for="key of Object.keys(d.expressions)"
-                                                    :key="key"
-                                            >{{key}}: {{(d.expressions[key]*100).toFixed(2)}}%</li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </b-list-group-item>
-                        </b-list-group>
-                    </div>
-                </div>
-                <br />
-                <b-button variant="primary" @click="detectFace(index)">Detect Face</b-button>
-                <b-button variant="danger" @click="deleteOneImage(img.imageId)">Delete</b-button>
-            </b-card>
-        </div>
-    </div>
+    </b-card-group>
 </template>
 <script>
     import { requestsMixin } from "../mixins/api.js";
-    import * as faceapi from "face-api.js";
-    const WEIGHTS_URL = "http://localhost:3002/static/models";
     export default {
-        name: "addImage",
+        name: "Home",
         mixins: [requestsMixin],
         computed: {
-            images() {
-                return this.$store.state.images;
-            }
         },
         async beforeMount() {
-            await faceapi.loadTinyFaceDetectorModel(WEIGHTS_URL);
-            await faceapi.loadFaceLandmarkTinyModel(WEIGHTS_URL);
-            await faceapi.loadFaceLandmarkModel(WEIGHTS_URL);
-            await faceapi.loadFaceRecognitionModel(WEIGHTS_URL);
-            await faceapi.loadFaceExpressionModel(WEIGHTS_URL);
-            await faceapi.loadAgeGenderModel(WEIGHTS_URL);
-            await faceapi.loadFaceDetectionModel(WEIGHTS_URL);
+            const {data} = await this.getImages();
+            this.images = data.data;
         },
         data() {
             return {
                 form: {},
+                images: null,
+                detections: {},
             };
         },
         methods: {
-            async deleteOneImage(id) {
-                await this.deleteImage(id);
-                this.getAllImages();
+            goToImage(id) {
+                this.$router.push(`/image/${id}`);
             },
-            async getAllImages() {
-                const { data } = await this.getImages();
-                this.$store.commit("setImages", data.data);
-                if (this.$refs.file) {
-                    this.$refs.file.value = "";
-                }
-            },
-            onChangeFileUpload($event) {
-                const file = $event.target.files[0];
-                const reader = new FileReader();
-                reader.onload = async () => {
-                    this.$refs.image.src = reader.result;
-                    this.form.image = reader.result;
-                    this.form.ownerId = 1;
-                    this.form.params = {};
-                    console.log(this.form);
-                    await this.addImage(this.form);
-                    this.getAllImages();
-                    this.form.image = "";
-                };
-                reader.readAsDataURL(file);
-            },
-            async detectFace(index) {
-                const input = this.$refs[`photo-${index}`][0];
-                const options = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 128,
-                    scoreThreshold: 0.3
-                });
-                const detections = await faceapi
-                    .detectAllFaces(input, options)
-                    .withFaceLandmarks()
-                    .withFaceExpressions()
-                    .withAgeAndGender()
-                    .withFaceDescriptors();
-                this.images[index].detections = detections;
-                await this.editImage(this.images[index]);
-                this.getAllImages();
-            }
         }
     };
 </script>
-<style>
-    .photo {
-        max-width: 200px;
-        margin-bottom: 10px;
+<style scoped>
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+    .item {
+        width: 300px;
+        min-height: 400px;
+        max-height: auto;
+        float: left;
+        margin: 3px;
+        padding: 3px;
     }
 </style>

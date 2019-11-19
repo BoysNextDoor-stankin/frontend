@@ -4,8 +4,8 @@
       <b-navbar-brand to="/">$APPLICATION_NAME</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
-        <b-navbar-nav>
-          <b-nav-item to="/add">Добавить изображение</b-nav-item>
+        <b-navbar-nav class="ml-auto">
+          <b-nav-item to="/add"><b>Добавить изображение</b></b-nav-item>
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
