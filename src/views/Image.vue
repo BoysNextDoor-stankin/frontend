@@ -10,8 +10,12 @@
                     style=""
                     class="mb-2"
             >
+                <b-card-text v-if="this.comment">
+                    <p><b>Комментарий: </b>{{comment}}</p>
+                </b-card-text>
                 <b-card-text v-if="detections">
                     <div>
+                        <b>Результат анализа лица:</b>
                         <b-list-group horizontal="" class="detection">
                             <b-list-group-item>Возраст: {{detections.age.toFixed(0)}}</b-list-group-item>
                             <b-list-group-item>Пол: {{translateGender(detections.gender)}}</b-list-group-item>
@@ -53,6 +57,7 @@
                 image: '',
                 detections: null,
                 withoutFace: false,
+                comment: null,
             }
         },
         components: {
@@ -61,6 +66,7 @@
         async beforeMount() {
             const {data} = await this.getImage(this.$route.params.id);
             this.image = data.data.image;
+            this.comment = data.data.comment;
             if (data.data.params.age) {
                 this.detections = data.data.params;
             } else {

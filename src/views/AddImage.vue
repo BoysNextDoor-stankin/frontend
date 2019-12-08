@@ -29,6 +29,13 @@
                     class="mb-2"
                     v-if="detected"
             >
+                <b-card-text>
+                    <b-input-group prepend="Комментарий" class="mt-3">
+                        <b-form-input v-model="comment"></b-form-input>
+                            <b-button variant="outline-success" @click="saveComment">Сохранить</b-button>
+                    </b-input-group>
+                </b-card-text>
+
                 <b-card-text v-if="withFace">
                     <div v-if="detections">
                         <b-list-group horizontal="" class="detection">
@@ -71,7 +78,8 @@
                 currentImageId: null,
                 detected: false,
                 image: '',
-                detections: null,
+                detections: {},
+                comment: '',
                 withFace: false,
             }
         },
@@ -88,10 +96,23 @@
             await faceapi.loadFaceDetectionModel(WEIGHTS_URL);
         },
         methods: {
+            saveComment() {
+                const data = {
+                    id: this.currentImageId,
+                    comment: this.comment,
+                };
+                if (this.detections) {
+                    data.params = this.detections;
+                } else {
+                    data.params = {};
+                }
+                this.editImage(data);
+            },
             newImageInit() {
                 this.detected = false;
                 this.detections = {};
                 this.image = '';
+                this.comment = null;
                 this.currentImageId = null;
                 this.withFace = false;
             },
@@ -118,6 +139,7 @@
                     const data = {
                         id: this.currentImageId,
                         params: this.detections,
+                        comment: this.comment,
                     };
                     this.editImage(data);
                 }
@@ -129,6 +151,7 @@
                         image,
                         ownerId: 1,
                         params: {},
+                        comment: this.comment,
                     };
                     const result = await this.addImage(data);
                     this.currentImageId = result.data.data.imageId;
