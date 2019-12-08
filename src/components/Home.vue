@@ -1,11 +1,16 @@
 <template>
-    <b-card-group deck>
-        <div v-for="img in images">
-            <a style="margin: 20px" @click="goToImage(img.imageId)">
-                <img class="item" :src="img.image" alt="zzzz">
-            </a>
-        </div>
-    </b-card-group>
+    <div>
+        <b-card-group deck>
+            <div v-for="img in images">
+                <a style="margin: 20px" @click="goToImage(img.imageId)">
+                    <img class="item" :src="img.image" alt="zzzz">
+                </a>
+            </div>
+        </b-card-group>
+        <b-card-text v-if="loading">
+            <img src="../assets/preloader.gif" alt="">
+        </b-card-text>
+    </div>
 </template>
 <script>
     import { requestsMixin } from "../mixins/api.js";
@@ -16,10 +21,12 @@
         },
         async beforeMount() {
             const {data} = await this.getImages();
+            this.loading = false;
             this.images = data.data;
         },
         data() {
             return {
+                loading: true,
                 form: {},
                 images: null,
                 detections: {},
