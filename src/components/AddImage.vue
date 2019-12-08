@@ -107,6 +107,11 @@
                     data.params = {};
                 }
                 this.editImage(data);
+                this.$notify({
+                    group: 'notify',
+                    type: 'success',
+                    text: '<b>Комментарий сохранен!</b>',
+                });
             },
             newImageInit() {
                 this.detected = false;
@@ -119,6 +124,11 @@
             async detectFace() {
                 if (!this.image) {
                     console.log('Image not found');
+                    this.$notify({
+                        group: 'notify',
+                        type: 'warn',
+                        title: 'Изображение не найдено',
+                    });
                     return;
                 }
                 const input = this.$refs['photo'];

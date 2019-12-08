@@ -40,7 +40,7 @@
                         </b-list-group>
                     </div>
                 </b-card-text>
-                <b-button variant="success" @click="$router.push('/')">Предложить свой вариант</b-button>
+                <b-button variant="success" @click="createFeedback">Предложить свой вариант</b-button>
 
 
                 <b-card-text v-if="loading">
@@ -91,6 +91,14 @@
             this.comment = data.data.comment;
         },
         methods: {
+            createFeedback() {
+                this.$notify({
+                    group: 'notify',
+                    title: 'Спасибо!',
+                    text: 'Ваше исправление будет рассмотрено!'
+                });
+                this.$router.push('/')
+            },
             translateGender(gender) {
                 const genders = {
                     'male': 'мужской',

@@ -10,6 +10,7 @@
       </b-collapse>
     </b-navbar>
     <router-view />
+    <notifications group="notify" position="top left"/>
   </div>
 </template>
 <script>
