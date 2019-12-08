@@ -17,9 +17,13 @@
                     <div>
                         <b>Результат анализа лица:</b>
                         <b-list-group horizontal="" class="detection">
-                            <b-list-group-item>Возраст: {{detections.age.toFixed(0)}}</b-list-group-item>
-                            <b-list-group-item>Пол: {{translateGender(detections.gender)}}</b-list-group-item>
-                            <b-list-group-item>Вероятность верного определения пола: {{(detections.genderProbability*100).toFixed(2)}}%</b-list-group-item>
+                            <b-list-group-item>Возраст: <b-input type="text" :value="detections.age.toFixed(0)"></b-input></b-list-group-item>
+                            <b-list-group-item>
+                                <b-form-group label="Пол">
+                                    <b-form-radio v-model="gender" name="radios" value="male">Мужской</b-form-radio>
+                                    <b-form-radio v-model="gender" name="radios" value="female">Женский</b-form-radio>
+                                </b-form-group>
+                            </b-list-group-item>
                         </b-list-group>
                         <b-list-group>
                             <b-list-group-item>
@@ -27,11 +31,18 @@
                                 <b-list-group-item
                                         v-for="key of Object.keys(detections.expressions)"
                                         :key="key"
-                                >{{translateExpressions(key)}}: {{(detections.expressions[key]*100).toFixed(2)}}%</b-list-group-item>
+                                >{{translateExpressions(key)}}:
+                                    <b-input-group append="%">
+                                        <b-input type="number" min="0" max="100" :value="(detections.expressions[key]*100).toFixed(2)">%</b-input>
+                                    </b-input-group>
+                                </b-list-group-item>
                             </b-list-group-item>
                         </b-list-group>
                     </div>
                 </b-card-text>
+                <b-button variant="success" @click="$router.push('/')">Предложить свой вариант</b-button>
+
+
                 <b-card-text v-if="loading">
                     <img src="../assets/preloader.gif" alt="">
                 </b-card-text>
@@ -44,35 +55,40 @@
 </template>
 
 <script>
-    import PictureInput from 'vue-picture-input'
     import { requestsMixin } from "../mixins/api.js";
 
     export default {
-        name: 'imageCard',
+        name: 'feedback',
         mixins: [requestsMixin],
         data () {
             return {
-                loading: true,
+                gender: null,
+                loading: false,
                 currentImageId: null,
                 image: '',
-                detections: null,
+                detections: {
+                    age: 1,
+                    gender: 'male',
+                    genderProbability: 69,
+                    expressions: {
+                        neutral: 0,
+                        happy: 0,
+                        sad: 1,
+                        angry: 0,
+                        fearful: 0,
+                        disgusted: 0,
+                        surprised: 0,
+                    }
+
+                },
                 withoutFace: false,
                 comment: null,
             }
-        },
-        components: {
-            PictureInput
         },
         async beforeMount() {
             const {data} = await this.getImage(this.$route.params.id);
             this.image = data.data.image;
             this.comment = data.data.comment;
-            if (data.data.params.age) {
-                this.detections = data.data.params;
-            } else {
-                this.withoutFace = true;
-            }
-            this.loading = false;
         },
         methods: {
             translateGender(gender) {

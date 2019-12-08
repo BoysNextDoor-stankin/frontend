@@ -1,8 +1,9 @@
 import Vue from "vue";
 import Router from "vue-router";
-import Home from "../views/Home.vue";
-import Image from "../views/Image.vue";
-import AddImage from "../views/AddImage.vue";
+import Home from "../components/Home.vue";
+import Image from "../components/Image.vue";
+import AddImage from "../components/AddImage.vue";
+import Feedback from "../components/Feedback.vue";
 
 Vue.use(Router);
 export default new Router({
@@ -23,6 +24,11 @@ export default new Router({
       path: '/image/:id',
       name: "image",
       component: Image,
+    },
+    {
+      path: '/image/:id/feedback',
+      name: "feedback",
+      component: Feedback,
     }
   ]
 });

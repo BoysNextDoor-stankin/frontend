@@ -57,7 +57,7 @@
                 <b-card-text v-if="!withFace">
                     <p><b>НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ЛИЦО 😓</b></p>
                 </b-card-text>
-
+                <b-button @click="$router.push(`/image/${currentImageId}/feedback`)" variant="primary">Не согласны с анализом?</b-button>
                 <b-button @click="newImageInit" variant="warning">Загрузить новое изображение</b-button>
             </b-card>
         </div>
