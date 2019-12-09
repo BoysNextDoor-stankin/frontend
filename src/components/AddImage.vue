@@ -141,7 +141,7 @@
                 }
                 const input = self.$refs['photo'];
                 const options = new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 128,
+                    inputSize: 256,
                     scoreThreshold: 0.3
                 });
                 const detections = await faceapi
