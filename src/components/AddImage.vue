@@ -17,7 +17,10 @@
               }">
                 </picture-input>
                 <img ref="photo" v-if="this.image" style="display: none" :src="this.image" alt="">
-                <b-button style="margin-top: 20px" block variant="primary" @click="detectFace">Определить лицо 😺</b-button>
+                <div v-if="!modelsLoaded">
+                    <p>Загрузка моделей <img src="../assets/preloader.gif" alt=""></p>
+                </div>
+                <b-button style="margin-top: 20px" block variant="primary" @click="detectFace" :disabled="!modelsLoaded">Определить лицо 😺</b-button>
             </div>
             <div class="card">
                 <b-card
@@ -85,6 +88,7 @@
                 comment: '',
                 withFace: false,
                 emotion: null,
+                modelsLoaded: false,
             }
         },
         components: {
@@ -92,6 +96,7 @@
             YandexPlaylist,
         },
         async beforeMount() {
+            this.modelsLoaded = false;
             await faceapi.loadTinyFaceDetectorModel(WEIGHTS_URL);
             await faceapi.loadFaceLandmarkTinyModel(WEIGHTS_URL);
             await faceapi.loadFaceLandmarkModel(WEIGHTS_URL);
@@ -99,6 +104,7 @@
             await faceapi.loadFaceExpressionModel(WEIGHTS_URL);
             await faceapi.loadAgeGenderModel(WEIGHTS_URL);
             await faceapi.loadFaceDetectionModel(WEIGHTS_URL);
+            this.modelsLoaded = true;
         },
         methods: {
             saveComment() {
