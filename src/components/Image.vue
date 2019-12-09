@@ -8,7 +8,7 @@
                         img-alt="Image"
                         img-top
                         tag="article"
-                        style=""
+                        style="width: 30%;"
                         class="mb-2"
                 >
                     <b-card-text v-if="this.comment">
