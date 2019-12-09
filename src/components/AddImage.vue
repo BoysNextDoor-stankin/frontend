@@ -1,72 +1,76 @@
 <template>
-    <b-form>
-        <div v-if="!detected">
-        <picture-input
-                    ref="pictureInput"
-                    @change="onChange"
-                    width="600"
-                    height="600"
-                    margin="16"
-                    accept="image/jpeg,image/png"
-                    size="10"
-                    buttonClass="btn"
-                    :customStrings="{
-            upload: '<h1>Bummer!</h1>',
-            drag: 'Поместите сюда фотокарточку с лицом'
-          }">
-            </picture-input>
-            <img ref="photo" v-if="this.image" style="display: none" :src="this.image" alt="">
-            <b-button style="margin-top: 20px" block variant="primary" @click="detectFace">Определить лицо 😺</b-button>
-        </div>
-        <div class="card">
-            <b-card
-                    title=""
-                    :img-src="this.image"
-                    img-alt="Image"
-                    img-top
-                    tag="article"
-                    style=""
-                    class="mb-2"
-                    v-if="detected"
-            >
-                <b-card-text>
-                    <b-input-group prepend="Комментарий" class="mt-3">
-                        <b-form-input v-model="comment"></b-form-input>
-                            <b-button variant="outline-success" @click="saveComment">Сохранить</b-button>
-                    </b-input-group>
-                </b-card-text>
+    <div>
+        <b-form>
+            <div v-if="!detected">
+            <picture-input
+                        ref="pictureInput"
+                        @change="onChange"
+                        width="600"
+                        height="600"
+                        margin="16"
+                        accept="image/jpeg,image/png"
+                        size="10"
+                        buttonClass="btn"
+                        :customStrings="{
+                upload: '<h1>Bummer!</h1>',
+                drag: 'Поместите сюда фотокарточку с лицом'
+              }">
+                </picture-input>
+                <img ref="photo" v-if="this.image" style="display: none" :src="this.image" alt="">
+                <b-button style="margin-top: 20px" block variant="primary" @click="detectFace">Определить лицо 😺</b-button>
+            </div>
+            <div class="card">
+                <b-card
+                        title=""
+                        :img-src="this.image"
+                        img-alt="Image"
+                        img-top
+                        tag="article"
+                        style=""
+                        class="mb-2"
+                        v-if="detected"
+                >
+                    <b-card-text>
+                        <b-input-group prepend="Комментарий" class="mt-3">
+                            <b-form-input v-model="comment"></b-form-input>
+                                <b-button variant="outline-success" @click="saveComment">Сохранить</b-button>
+                        </b-input-group>
+                    </b-card-text>
 
-                <b-card-text v-if="withFace">
-                    <div v-if="detections">
-                        <b-list-group horizontal="" class="detection">
-                            <b-list-group-item>Возраст: {{detections.age.toFixed(0)}}</b-list-group-item>
-                            <b-list-group-item>Пол: {{translateGender(detections.gender)}}</b-list-group-item>
-                            <b-list-group-item>Вероятность верного определения пола: {{(detections.genderProbability*100).toFixed(2)}}%</b-list-group-item>
-                        </b-list-group>
-                        <b-list-group>
-                                <b-list-group-item>
-                                    Выражения лица:
-                                    <b-list-group-item
-                                            v-for="key of Object.keys(detections.expressions)"
-                                            :key="key"
-                                    >{{translateExpressions(key)}}: {{(detections.expressions[key]*100).toFixed(2)}}%</b-list-group-item>
-                                </b-list-group-item>
+                    <b-card-text v-if="withFace">
+                        <div v-if="detections">
+                            <b-list-group horizontal="" class="detection">
+                                <b-list-group-item>Возраст: {{detections.age.toFixed(0)}}</b-list-group-item>
+                                <b-list-group-item>Пол: {{translateGender(detections.gender)}}</b-list-group-item>
+                                <b-list-group-item>Вероятность верного определения пола: {{(detections.genderProbability*100).toFixed(2)}}%</b-list-group-item>
                             </b-list-group>
-                    </div>
-                </b-card-text>
-                <b-card-text v-if="!withFace">
-                    <p><b>НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ЛИЦО 😓</b></p>
-                </b-card-text>
-                <b-button @click="$router.push(`/image/${currentImageId}/feedback`)" variant="primary">Не согласны с анализом?</b-button>
-                <b-button @click="newImageInit" variant="warning">Загрузить новое изображение</b-button>
-            </b-card>
-        </div>
-    </b-form>
+                            <b-list-group>
+                                    <b-list-group-item>
+                                        Выражения лица:
+                                        <b-list-group-item
+                                                v-for="key of Object.keys(detections.expressions)"
+                                                :key="key"
+                                        >{{translateExpressions(key)}}: {{(detections.expressions[key]*100).toFixed(2)}}%</b-list-group-item>
+                                    </b-list-group-item>
+                                </b-list-group>
+                        </div>
+                    </b-card-text>
+                    <b-card-text v-if="!withFace">
+                        <p><b>НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ЛИЦО 😓</b></p>
+                    </b-card-text>
+                    <b-button @click="$router.push(`/image/${currentImageId}/feedback`)" variant="primary">Не согласны с анализом?</b-button>
+                    <b-button @click="newImageInit" variant="warning">Загрузить новое изображение</b-button>
+                </b-card>
+            </div>
+        </b-form>
+        <yandex-playlist v-if="emotion !== null" v-bind:emotion="emotion"/>
+    </div>
 </template>
 
 <script>
     import PictureInput from 'vue-picture-input'
     import { requestsMixin } from "../mixins/api.js";
+    import YandexPlaylist from "./YandexPlaylist";
     import * as faceapi from "face-api.js";
     const WEIGHTS_URL = process.env.VUE_APP_WEIGHTS_URL || "http://localhost:3002/static/models";
 
@@ -81,10 +85,12 @@
                 detections: {},
                 comment: '',
                 withFace: false,
+                emotion: null,
             }
         },
         components: {
-            PictureInput
+            PictureInput,
+            YandexPlaylist,
         },
         async beforeMount() {
             await faceapi.loadTinyFaceDetectorModel(WEIGHTS_URL);
@@ -120,9 +126,11 @@
                 this.comment = null;
                 this.currentImageId = null;
                 this.withFace = false;
+                this.emotion = null;
             },
             async detectFace() {
-                if (!this.image) {
+                const self = this;
+                if (!self.image) {
                     console.log('Image not found');
                     this.$notify({
                         group: 'notify',
@@ -131,7 +139,7 @@
                     });
                     return;
                 }
-                const input = this.$refs['photo'];
+                const input = self.$refs['photo'];
                 const options = new faceapi.TinyFaceDetectorOptions({
                     inputSize: 128,
                     scoreThreshold: 0.3
@@ -142,16 +150,28 @@
                     .withFaceExpressions()
                     .withAgeAndGender()
                     .withFaceDescriptors();
-                this.detections = detections[0];
-                this.detected = true;
-                this.withFace = !!detections.length;
+                self.detections = detections[0];
+                self.detected = true;
+                self.withFace = !!detections.length;
                 if (this.withFace) {
                     const data = {
-                        id: this.currentImageId,
-                        params: this.detections,
-                        comment: this.comment,
+                        id: self.currentImageId,
+                        params: self.detections,
+                        comment: self.comment,
                     };
-                    this.editImage(data);
+                    self.editImage(data);
+                    let tempEmotion = '';
+                    let tempEmotionValue = -1;
+                    const {expressions} = self.detections;
+                    for (const emotion in expressions) {
+                        if (expressions[emotion] > tempEmotionValue) {
+                            tempEmotion = emotion;
+                            tempEmotionValue = expressions[emotion];
+                        }
+                    }
+                    self.emotion = tempEmotion;
+                } else {
+                    self.emotion = '';
                 }
             },
             async onChange (image) {
