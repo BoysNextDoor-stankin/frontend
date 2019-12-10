@@ -2,9 +2,7 @@
     <div>
         <b-card-group deck>
             <div v-for="img in images">
-                <a style="margin: 20px" @click="goToImage(img.imageId)">
-                    <img class="item" :src="img.image" alt="zzzz">
-                </a>
+                    <img class="item box" :src="img.image" alt="zzzz">
             </div>
         </b-card-group>
         <b-card-text v-if="loading">
@@ -51,5 +49,19 @@
         float: left;
         margin: 3px;
         padding: 3px;
+    }
+    .box {
+        transition: box-shadow .3s;
+        width: 20em;
+        height: 5em;
+        margin: 50px;
+        border-radius:10px;
+        border: 1px solid #ccc;
+        background: #fff;
+        float: left;
+
+    }
+    .box:hover {
+        box-shadow: 0 0 11px rgba(33,33,33,.2);
     }
 </style>
