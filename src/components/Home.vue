@@ -2,7 +2,7 @@
     <div>
         <b-card-group deck>
             <div v-for="img in images">
-                    <img class="item box" :src="img.image" alt="zzzz">
+                    <img class="item box" @click="goToImage(img.imageId)" :src="img.image" alt="zzzz">
             </div>
         </b-card-group>
         <b-card-text v-if="loading">
