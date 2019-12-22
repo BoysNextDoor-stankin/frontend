@@ -9,6 +9,10 @@
         </b-navbar-nav>
       </b-collapse>
     </b-navbar>
+    <b-modal ref="modal" title="Внимание!">
+      <p class="my-4">Добро пожаловать на демо-версию проекта <b>EMOTION RECOGNISING</b></p>
+      <p class="my-4">В данный момент ведутся работы по дополнению функциональности, в связи с этим возможны перебои в работе, в частности может не работать сохранение изображений на сервер</p>
+    </b-modal>
     <router-view />
     <notifications group="notify" position="top left"/>
   </div>
@@ -19,6 +23,9 @@
       return {
         path: this.$route && this.$route.path
       };
+    },
+    mounted() {
+      this.$refs.modal.show();
     },
     watch: {
       $route(route) {
